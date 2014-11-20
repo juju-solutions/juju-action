@@ -32,7 +32,7 @@ def _check_call(params, log, *args, **kw):
                 stderr = kw['stderr']
                 output = subprocess.check_output(
                     params, cwd=cwd, stderr=stderr, env=os.environ)
-    except subprocess.CalledProcessError, e:
+    except subprocess.CalledProcessError as e:
         if 'ignoreerr' in kw:
             return
             log.error(*args)
@@ -96,7 +96,7 @@ def main(args=None):
     if not args:
         args = sys.argv
     if len(args) < 2:
-        print "boo"
+        print("boo")
         sys.exit()
     service = args[1]
     env = GoEnvironment(os.environ.get("JUJU_ENV"))
