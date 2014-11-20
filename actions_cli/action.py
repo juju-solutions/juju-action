@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import logging
 import subprocess
 import os
@@ -94,13 +92,13 @@ class GoEnvironment(BaseEnvironment):
     def status(self):
         return self.client.get_stat()
 
-
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
+def main(args=None):
+    if not args:
+        args = sys.argv
+    if len(args) < 2:
         print "boo"
         sys.exit()
-    service = sys.argv[1]
-
+    service = args[1]
     env = GoEnvironment(os.environ.get("JUJU_ENV"))
     env.connect()
     services = env.client.status().get('Services', {})
@@ -113,4 +111,5 @@ if __name__ == "__main__":
         sys.stdout.write('\n')
     env.close()
 
-    pass
+if __name__ == "__main__":
+    main(sys.argv)
