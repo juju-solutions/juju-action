@@ -21,10 +21,7 @@ install: venv develop
 
 venv: $(PY)
 $(PY):
-	python3 -m venv --without-pip venv
-	curl https://bootstrap.pypa.io/ez_setup.py | $(PY)
-	venv/bin/easy_install pip || venv/local/bin/easy_install pip
-	rm setuptools*.zip
+	virtualenv venv
 
 .PHONY: clean_all
 clean_all: clean clean_venv
@@ -88,4 +85,3 @@ check: test lint
 
 .PHONY: all
 all: clean venv coverage lint
-
