@@ -43,7 +43,7 @@ lib/python*/site-packages/actions_cli.egg-link:
 
 .PHONY: sysdeps
 sysdeps:
-	sudo apt-get $(shell tty -s || echo -y) install python3-dev juju-core bzr python3-setuptools
+	sudo apt-get $(shell tty -s || echo -y) install python-dev juju-core bzr python-setuptools
 
 # ###########
 # Develop
