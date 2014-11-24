@@ -17,25 +17,25 @@ def _check_call(params, log, *args, **kw):
     cur = kw.get('cur_try', 1)
     try:
         cwd = abspath(".")
+        stderr = subprocess.STDOUT
         if 'cwd' in kw:
             cwd = kw['cwd']
-            stderr = subprocess.STDOUT
-            if 'stderr' in kw:
-                stderr = kw['stderr']
-                output = subprocess.check_output(
-                    params, cwd=cwd, stderr=stderr, env=os.environ)
+        if 'stderr' in kw:
+            stderr = kw['stderr']
+        output = subprocess.check_output(params, cwd=cwd,
+                                         stderr=stderr, env=os.environ)
     except subprocess.CalledProcessError as e:
         if 'ignoreerr' in kw:
             return
-            log.error(*args)
-            log.error("Command (%s) Output:\n\n %s", " ".join(params), e.output)
-            if not max_retry or cur > max_retry:
-                raise ErrorExit(e)
-                kw['cur_try'] = cur + 1
-                log.error("Retrying (%s of %s)" % (cur, max_retry))
-                time.sleep(1)
-                output = _check_call(params, log, args, **kw)
-                return output
+        log.error(*args)
+        if not max_retry or cur > max_retry:
+            raise ErrorExit(e)
+        kw['cur_try'] = cur + 1
+        log.error("Retrying (%s of %s)" % (cur, max_retry))
+        time.sleep(1)
+        output = _check_call(params, log, args, **kw)
+
+    return output
 
 
 class ErrorExit(Exception):
@@ -46,7 +46,7 @@ class ErrorExit(Exception):
 
 class BaseEnvironment:
 
-    log = logging.getLogger("deployer.env")
+    log = logging.getLogger("actions-cli")
 
     def _named_env(self, params):
         if self.name:
