@@ -2,6 +2,7 @@ import logging
 import subprocess
 import time
 import os
+import json
 
 from os.path import (
     abspath,
@@ -10,6 +11,38 @@ from os.path import (
 from jujuclient import (
     Environment as EnvironmentClient,
 )
+
+
+class ActionEnvironment(EnvironmentClient):
+    """Subclass jujuclient so we can add Action-specific functionality
+    without having to fork and maintain our own copy.
+    """
+
+    def do(self, service, action, params={}, async=False):
+        """
+        Tag:
+        Receiver: This is the unit name
+        Name: The name of the Action
+        """
+
+        # TODO: Iterate through all units
+        # TODO: Implement parameters
+        args = {
+            "Type": "Action",
+            "Request": "Enqueue",
+            "Params": {
+                "Actions": [
+                    {
+                        "Receiver": "unit-%s-0" % service,
+                        "Name": action,
+                        "Parameters": {}
+                    }
+                ]
+            }
+        }
+        result = self._rpc(args)
+
+        return result
 
 
 def _check_call(params, log, *args, **kw):
@@ -28,18 +61,17 @@ def _check_call(params, log, *args, **kw):
         if 'ignoreerr' in kw:
             return
         log.error(*args)
+        log.error("Command (%s) Output:\n\n %s", " ".join(params), e.output)
         if not max_retry or cur > max_retry:
             raise ErrorExit(e)
         kw['cur_try'] = cur + 1
         log.error("Retrying (%s of %s)" % (cur, max_retry))
         time.sleep(1)
         output = _check_call(params, log, args, **kw)
-
     return output
 
 
 class ErrorExit(Exception):
-
     def __init__(self, error=None):
         self.error = error
 
@@ -78,7 +110,7 @@ class GoEnvironment(BaseEnvironment):
                 self.log, "Error getting env api endpoints, env bootstrapped?",
                 stderr=fh)
 
-            self.client = EnvironmentClient.connect(self.name)
+            self.client = ActionEnvironment.connect(self.name)
             self.log.debug("Connected to environment")
 
     def status(self):

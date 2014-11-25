@@ -21,7 +21,8 @@ setup(
     packages=['actions_cli'],
     entry_points={
         'console_scripts': [
-            'juju-action=actions_cli.action:main'
+            'juju-action=actions_cli.action:main',
+            'juju-do=actions_cli.do:main',
         ]
     }
 )
