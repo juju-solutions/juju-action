@@ -61,7 +61,6 @@ def _check_call(params, log, *args, **kw):
         if 'ignoreerr' in kw:
             return
         log.error(*args)
-        log.error("Command (%s) Output:\n\n %s", " ".join(params), e.output)
         if not max_retry or cur > max_retry:
             raise ErrorExit(e)
         kw['cur_try'] = cur + 1
@@ -83,12 +82,12 @@ class BaseEnvironment:
     def _named_env(self, params):
         if self.name:
             params.extend(["-e", self.name])
-            return params
+        return params
 
     def _check_call(self, *args, **kwargs):
         if self.options and self.options.retry_count:
             kwargs['max_retry'] = self.options.retry_count
-            return _check_call(*args, **kwargs)
+        return _check_call(*args, **kwargs)
 
 
 class GoEnvironment(BaseEnvironment):

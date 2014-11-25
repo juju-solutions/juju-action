@@ -5,7 +5,8 @@ from mock import patch, MagicMock
 
 from actions_cli.cli import (
     _check_call,
-    ErrorExit
+    ErrorExit,
+    BaseEnvironment,
 )
 
 
@@ -13,7 +14,8 @@ class CheckCallTests(unittest.TestCase):
     @patch('actions_cli.cli.subprocess')
     def test_check_call(self, ms):
         log = MagicMock()
-        _check_call(['juju', 'version'], log)
+        ms.check_output.return_value = "Test"
+        self.assertEqual('Test', _check_call(['juju', 'version'], log))
         ms.check_output.called_with(
             ['juju', 'version'],
             cwd=os.path.abspath('.'),
@@ -56,4 +58,21 @@ class CheckCallTests(unittest.TestCase):
 
 
 class BaseEnvironmentTests(unittest.TestCase):
-    pass
+    def setUp(self):
+        self.base = BaseEnvironment()
+
+    def test_named_env(self):
+        self.base.name = 'Foo'
+        self.assertEqual(["-e", 'Foo'], self.base._named_env([]))
+
+    def test_nonamed_env(self):
+        self.base.name = None
+        self.assertEqual([], self.base._named_env([]))
+
+    @patch('actions_cli.cli._check_call')
+    def test_check_call(self, cc):
+        self.base.options = {}
+        cc.return_value = 'Hello'
+        self.assertEqual('Hello', self.base._check_call())
+        cc.assert_called()
+
