@@ -24,10 +24,15 @@ def main(args=None):
 
     env = GoEnvironment(os.environ.get("JUJU_ENV"))
     env.connect()
-    uuid = env.client.do(service, action, params)
+    results = env.client.do(service, action, params)
     env.close()
 
-    print "action: %s" % uuid
+    if results:
+        for result in results['results']:
+            uuid = result['action']['tag']
+            status = result['status']
+            print "action: %s" % uuid
+            print "status: %s" % status
 
 if __name__ == "__main__":
     main(sys.argv)
