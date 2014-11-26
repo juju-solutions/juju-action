@@ -2,7 +2,6 @@ import logging
 import subprocess
 import time
 import os
-import json
 
 from os.path import (
     abspath,
@@ -24,23 +23,28 @@ class ActionEnvironment(EnvironmentClient):
         Receiver: This is the unit name
         Name: The name of the Action
         """
+        services = self.status().get('Services', {})
+        if service in services:
+            args = {
+                "Type": "Action",
+                "Request": "Enqueue",
+                "Params": {
+                    "Actions": [
+                    ]
+                }
+            }
 
-        # TODO: Iterate through all units
-        args = {
-            "Type": "Action",
-            "Request": "Enqueue",
-            "Params": {
-                "Actions": [
+            for unit in services[service]['Units']:
+                args['Params']['Actions'].append(
                     {
-                        "Receiver": "unit-%s-0" % service,
+                        "Receiver": "unit-%s" % unit.replace('/', '-'),
                         "Name": action,
                         "Parameters": params
                     }
-                ]
-            }
-        }
-        result = self._rpc(args)
-        return result
+                )
+            result = self._rpc(args)
+            return result
+        return None
 
 
 def _check_call(params, log, *args, **kw):
