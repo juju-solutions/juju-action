@@ -23,6 +23,7 @@ setup(
         'console_scripts': [
             'juju-action=actions_cli.action:main',
             'juju-do=actions_cli.do:main',
+            'juju-queue=actions_cli.queue:main',
         ]
     }
 )

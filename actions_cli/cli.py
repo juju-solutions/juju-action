@@ -18,6 +18,25 @@ class ActionEnvironment(EnvironmentClient):
     without having to fork and maintain our own copy.
     """
 
+    def queue(self, service):
+        args = {
+            "Type": 'Action',
+            "Request": 'ListAll',
+            "Params": {
+                "Entities": []
+            }
+        }
+
+        services = self.status().get('Services', {})
+        for unit in services[service]['Units']:
+            args['Params']['Entities'].append(
+                {
+                    "Tag": "unit-%s" % unit.replace('/', '-'),
+                }
+            )
+
+        return self._rpc(args)
+
     def do(self, service, action, params={}, async=False):
         """
         Tag:
