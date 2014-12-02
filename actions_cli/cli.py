@@ -2,7 +2,6 @@ import logging
 import subprocess
 import time
 import os
-import json
 
 from os.path import (
     abspath,
@@ -18,31 +17,34 @@ class ActionEnvironment(EnvironmentClient):
     without having to fork and maintain our own copy.
     """
 
-    def do(self, service, action, params={}, async=False):
+    def do(self, service, action, params=None, async=False):
         """
         Tag:
         Receiver: This is the unit name
         Name: The name of the Action
         """
-
-        # TODO: Iterate through all units
-        # TODO: Implement parameters
-        args = {
-            "Type": "Action",
-            "Request": "Enqueue",
-            "Params": {
-                "Actions": [
-                    {
-                        "Receiver": "unit-%s-0" % service,
-                        "Name": action,
-                        "Parameters": {}
-                    }
-                ]
+        services = self.status().get('Services', {})
+        if service in services:
+            args = {
+                "Type": "Action",
+                "Request": "Enqueue",
+                "Params": {
+                    "Actions": [
+                    ]
+                }
             }
-        }
-        result = self._rpc(args)
 
-        return result
+            for unit in services[service]['Units']:
+                args['Params']['Actions'].append(
+                    {
+                        "Receiver": "unit-%s" % unit.replace('/', '-'),
+                        "Name": action,
+                        "Parameters": params
+                    }
+                )
+            result = self._rpc(args)
+            return result
+        return None
 
 
 def _check_call(params, log, *args, **kw):
