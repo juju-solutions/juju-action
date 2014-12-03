@@ -17,34 +17,50 @@ class ActionEnvironment(EnvironmentClient):
     without having to fork and maintain our own copy.
     """
 
-    def do(self, service, action, params=None, async=False):
+    def queue(self, service):
+        args = {
+            "Type": 'Action',
+            "Request": 'ListAll',
+            "Params": {
+                "Entities": []
+            }
+        }
+
+        services = self.status().get('Services', {})
+        for unit in services[service]['Units']:
+            args['Params']['Entities'].append(
+                {
+                    "Tag": "unit-%s" % unit.replace('/', '-'),
+                }
+            )
+
+        return self._rpc(args)
+
+    def do(self, service, action, params={}, async=False):
         """
         Tag:
         Receiver: This is the unit name
         Name: The name of the Action
         """
-        services = self.status().get('Services', {})
-        if service in services:
-            args = {
-                "Type": "Action",
-                "Request": "Enqueue",
-                "Params": {
-                    "Actions": [
-                    ]
-                }
-            }
 
-            for unit in services[service]['Units']:
-                args['Params']['Actions'].append(
+        # TODO: Iterate through all units
+        # TODO: Implement parameters
+        args = {
+            "Type": "Action",
+            "Request": "Enqueue",
+            "Params": {
+                "Actions": [
                     {
-                        "Receiver": "unit-%s" % unit.replace('/', '-'),
+                        "Receiver": "unit-%s-0" % service,
                         "Name": action,
-                        "Parameters": params
+                        "Parameters": {}
                     }
-                )
-            result = self._rpc(args)
-            return result
-        return None
+                ]
+            }
+        }
+        result = self._rpc(args)
+
+        return result
 
 
 def _check_call(params, log, *args, **kw):
