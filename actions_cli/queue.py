@@ -20,15 +20,15 @@ def main(args=None):
     env.connect()
     results = env.client.queue(service)
     env.close()
-
     if results:
         for action in results['actions']:
-            for result in action['actions']:
-                uuid = result['action']['tag']
-                name = result['action']['name']
-                status = result['status']
-                print "action: %s (%s)" % (uuid, name)
-                print "status: %s" % status
+            if 'actions' in action:
+                for result in action['actions']:
+                    uuid = result['action']['tag']
+                    name = result['action']['name']
+                    status = result['status']
+                    print "action: %s (%s)" % (uuid, name)
+                    print "status: %s" % status
 
 if __name__ == "__main__":
     main(sys.argv)
