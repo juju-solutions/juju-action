@@ -2,7 +2,6 @@ import logging
 import subprocess
 import time
 import os
-import json
 
 from os.path import (
     abspath,
